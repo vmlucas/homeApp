@@ -9,6 +9,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AlunoRepository extends MongoRepository<Aluno, String> {
     
+    /*
+     * fetch on mongodb an Aluno based on the name
+     * 
+     * input - student name 
+     * return Aluno
+     */
     @Query("{'Nome' : ?0}")
     Aluno buscarAluno(String nome);
     

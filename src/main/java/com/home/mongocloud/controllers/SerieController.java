@@ -1,5 +1,6 @@
 package com.home.mongocloud.controllers;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,17 +12,25 @@ import java.util.*;
 @RestController
 public class SerieController {
 
+    @Value("${authAPIKey}")
+    private String authAPIKey;
     SerieRepository serieRepository;
 
     public SerieController(SerieRepository serieRepository) {
         this.serieRepository = serieRepository;
     }
 
+    /**
+     * Insert a new Serie on DB
+     * @param key - a key to authorize the operation
+     * @param createSerieDto - A Serie object to be inserted
+     * @return - the status if it was inserted or forbidden if the key was wrong.
+     */
     @PostMapping("/insertSerie")
     public ResponseEntity<Serie> createSerie(@RequestParam(value = "key", defaultValue = "sem chave") String key,
                                              @RequestBody CreateSerieDto createSerieDto) {
         
-        if( key.equals("voa7F6JJiagvMbZtT7BY0w==")) 
+        if( key.equals(authAPIKey)) 
         {                                        
            Serie serieCreated = serieRepository.save(createSerieDto.toSerie());
            return new ResponseEntity<>(serieCreated, HttpStatus.CREATED);
@@ -31,6 +40,13 @@ public class SerieController {
         }
     }
 
+    /**
+     * return a list of Serie based on the year and status. If the year is zero or undefined, it returns all Serie.
+     * 
+     * @param ano - Year
+     * @param status - status ( watched, Watching, Waiting...)
+     * @return -  json output with the Serie list
+     */
     @GetMapping("/buscarSeries")
     public ResponseEntity<List<Serie>> buscarSeries(@RequestParam(value = "ano", defaultValue = "0") int ano,
             @RequestParam(value = "status", defaultValue = "Watching") String status) {
@@ -43,6 +59,12 @@ public class SerieController {
         }
     }
 
+    /**
+     * return a list of Serie based on the name.
+     * 
+     * @param nome - Serie name
+     * @return json output with the Serie list
+     */
     @GetMapping("/buscarSerie")
     public ResponseEntity<List<Serie>> buscarSerie(@RequestParam(value = "nome", defaultValue = "Obi wan") String nome) {
         List<Serie> series = serieRepository.buscarSerie(nome);
@@ -50,16 +72,24 @@ public class SerieController {
         
     }
 
+    /**
+     * Update a Serie on DB based on the id.
+     * 
+     * @param key - a key to authorize the operation
+     * @param id - Serie id to be updated
+     * @param createSerieDto - A Serie object to be updated
+     * @return - the status ok if it was inserted, no content if the id was not found or forbidden if the key was wrong.
+     */
     @PostMapping("/updateSerie")
     public ResponseEntity<Serie> updateSerie(@RequestParam(value = "key", defaultValue = "sem chave") String key,
                                              @RequestParam(value = "id") String id, @RequestBody CreateSerieDto createSerieDto) {
         
-        if( key.equals("voa7F6JJiagvMbZtT7BY0w==")) 
+        if( key.equals(authAPIKey)) 
         {
             Optional<Serie> optionalSerie = serieRepository.findById(id);
           
             if (optionalSerie.isEmpty()) {
-              return new ResponseEntity<>(null, HttpStatus.OK);
+              return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
             }
           
             Serie serieToUpdate = optionalSerie.get()
@@ -80,11 +110,18 @@ public class SerieController {
         }
     }
 
+    /**
+     * delete a Serie on DB based on the id.
+     * 
+     * @param key - a key to authorize the operation
+     * @param id - Serie id to be deleted
+     * @return - the status no content if it was deleted or forbidden if the key was wrong.
+     */
     @PostMapping("/deleteSerie")
     public ResponseEntity<Void> deleteSerie(@RequestParam(value = "key", defaultValue = "sem chave") String key,
                                             @RequestParam(value = "id", defaultValue = "abc") String id) {
         
-        if( key.equals("voa7F6JJiagvMbZtT7BY0w==")) 
+        if( key.equals(authAPIKey)) 
         {
           serieRepository.deleteById(id);
           return new ResponseEntity<>(HttpStatus.NO_CONTENT);
