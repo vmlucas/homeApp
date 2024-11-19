@@ -1,10 +1,9 @@
 package com.home.mongocloud.controllers;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import com.home.mongocloud.repositories.*;
+import com.home.mongocloud.services.SeriesService;
 import com.home.mongocloud.models.*;
 import com.home.mongocloud.dtos.*;
 import java.util.*;
@@ -12,12 +11,11 @@ import java.util.*;
 @RestController
 public class SerieController {
 
-    @Value("${authAPIKey}")
-    private String authAPIKey;
-    SerieRepository serieRepository;
+    
+    SeriesService service;
 
-    public SerieController(SerieRepository serieRepository) {
-        this.serieRepository = serieRepository;
+    public SerieController(SeriesService service) {
+        this.service = service;
     }
 
     /**
@@ -30,13 +28,15 @@ public class SerieController {
     public ResponseEntity<Serie> createSerie(@RequestParam(value = "key", defaultValue = "sem chave") String key,
                                              @RequestBody CreateSerieDto createSerieDto) {
         
-        if( key.equals(authAPIKey)) 
-        {                                        
-           Serie serieCreated = serieRepository.save(createSerieDto.toSerie());
+        try{
+           Serie serieCreated = service.createSerie(key, createSerieDto);
            return new ResponseEntity<>(serieCreated, HttpStatus.CREATED);
         }
-        else{
-           return new ResponseEntity<>(HttpStatus.FORBIDDEN);   
+        catch(Exception e){
+           Serie s = new Serie();
+           s.setSeriesName(e.getMessage());
+           return new ResponseEntity<>(s, HttpStatus.FORBIDDEN);
+     
         }
     }
 
@@ -48,15 +48,14 @@ public class SerieController {
      * @return -  json output with the Serie list
      */
     @GetMapping("/buscarSeries")
-    public ResponseEntity<List<Serie>> buscarSeries(@RequestParam(value = "ano", defaultValue = "0") int ano,
-            @RequestParam(value = "status", defaultValue = "Watching") String status) {
-        if (ano > 0) {
-            List<Serie> series = serieRepository.buscarSeries(ano,status);
-            return ResponseEntity.ok(series);
-        } else {
-            List<Serie> series = serieRepository.findAll();
-            return ResponseEntity.ok(series);
-        }
+    public ResponseEntity<Page<Serie>> buscarSeries(@RequestParam(value = "ano", defaultValue = "0") int ano,
+            @RequestParam(value = "status", defaultValue = "Watching") String status,
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize) {
+
+        Page<Serie> series = service.buscarSeries(ano, status, pageNo, pageSize);       
+        return ResponseEntity.ok(series);
+        
     }
 
     /**
@@ -67,7 +66,7 @@ public class SerieController {
      */
     @GetMapping("/buscarSerie")
     public ResponseEntity<List<Serie>> buscarSerie(@RequestParam(value = "nome", defaultValue = "Obi wan") String nome) {
-        List<Serie> series = serieRepository.buscarSerie(nome);
+        List<Serie> series = service.buscarSerie(nome);
         return ResponseEntity.ok(series);
         
     }
@@ -84,30 +83,17 @@ public class SerieController {
     public ResponseEntity<Serie> updateSerie(@RequestParam(value = "key", defaultValue = "sem chave") String key,
                                              @RequestParam(value = "id") String id, @RequestBody CreateSerieDto createSerieDto) {
         
-        if( key.equals(authAPIKey)) 
-        {
-            Optional<Serie> optionalSerie = serieRepository.findById(id);
-          
-            if (optionalSerie.isEmpty()) {
-              return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-            }
-          
-            Serie serieToUpdate = optionalSerie.get()
-              .setApp(createSerieDto.getApp())
-              .setProvider(createSerieDto.getProvider())
-              .setStatus(createSerieDto.getStatus())
-              .setSeason(createSerieDto.getSeason())
-              .setSeriesName(createSerieDto.getSeriesName())
-              .setYear(createSerieDto.getYear());
-        
-            //save the new version
-            Serie serieUpdated = serieRepository.save(serieToUpdate);
-        
+        try{
+            Serie serieUpdated = service.updateSerie(key, id, createSerieDto);
             return new ResponseEntity<>(serieUpdated, HttpStatus.OK);
         }
-        else{
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);  
-        }
+        catch(Exception e){
+            Serie s = new Serie();
+            s.setSeriesName(e.getMessage());
+            return new ResponseEntity<>(s, HttpStatus.FORBIDDEN);
+     
+        }                                        
+        
     }
 
     /**
@@ -118,17 +104,17 @@ public class SerieController {
      * @return - the status no content if it was deleted or forbidden if the key was wrong.
      */
     @PostMapping("/deleteSerie")
-    public ResponseEntity<Void> deleteSerie(@RequestParam(value = "key", defaultValue = "sem chave") String key,
+    public ResponseEntity<String> deleteSerie(@RequestParam(value = "key", defaultValue = "sem chave") String key,
                                             @RequestParam(value = "id", defaultValue = "abc") String id) {
         
-        if( key.equals(authAPIKey)) 
-        {
-          serieRepository.deleteById(id);
-          return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        try{
+            String msg = service.deleteSerie(key, id);
+            return new ResponseEntity<>(msg,HttpStatus.NO_CONTENT);
         }
-        else{
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);  
-        }
+        catch(Exception e){
+           return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+     
+        }   
     }
 
 }

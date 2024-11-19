@@ -1,7 +1,7 @@
 package com.home.mongocloud.repositories;
 
 import com.home.mongocloud.models.*;
-
+import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
@@ -28,10 +28,10 @@ public interface SerieRepository extends MongoRepository<Serie, String> {
      * input - serie year and status
      * return List<Serie>
      */
-    @Aggregation(pipeline = {
+    /*@Aggregation(pipeline = {
             "  {'$match': {'status': ?1}}",
             "  {'$match': {'year': ?0}}"
     })
-    List<Serie> buscarSeries(int ano,String status);
+    Page<Serie> buscarSeries(int ano,String status,Pageable pageable);*/
 
 }

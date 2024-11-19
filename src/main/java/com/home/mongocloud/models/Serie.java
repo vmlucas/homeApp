@@ -20,4 +20,9 @@ public class Serie {
     private String provider;
     private String app;
     private String status;
+    private String imdbId;
+    private String overview;
+    private String imageURI;
+    private String[] cast;
+    private int rating;
 }

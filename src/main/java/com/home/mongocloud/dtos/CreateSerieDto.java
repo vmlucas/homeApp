@@ -13,8 +13,9 @@ public class CreateSerieDto {
     private String provider;
     private String app;
     private String status; 
+    private String imdbId;
 
     public Serie toSerie() {
-        return new Serie().setYear(year).setSeriesName(seriesName).setSeason(season).setProvider(provider).setApp(app).setStatus(status);
+        return new Serie().setYear(year).setSeriesName(seriesName).setSeason(season).setProvider(provider).setApp(app).setStatus(status).setImdbId(imdbId);
     }
 }
