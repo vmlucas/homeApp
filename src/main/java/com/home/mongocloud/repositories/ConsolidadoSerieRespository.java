@@ -2,11 +2,8 @@ package com.home.mongocloud.repositories;
 
 import com.home.mongocloud.models.*;
 import java.util.*;
-import java.time.ZonedDateTime;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
-import org.springframework.stereotype.Repository;
 
 public interface ConsolidadoSerieRespository extends MongoRepository<ConsolidadoSerie, String>{
 

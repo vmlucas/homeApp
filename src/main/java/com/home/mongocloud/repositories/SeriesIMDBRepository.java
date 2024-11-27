@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import com.home.mongocloud.models.StreamingInfo;
-import java.util.*;
 
 @Component
 public class SeriesIMDBRepository implements IMDBRepository {
