@@ -8,10 +8,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.*;
 import org.springframework.data.support.PageableExecutionUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
 import com.home.mongocloud.dtos.CreateSerieDto;
 import com.home.mongocloud.models.Serie;
 import com.home.mongocloud.models.StreamingInfo;
@@ -49,8 +46,10 @@ public class SeriesService {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         if (ano > 0) {
             Page<Serie> series = buscarSeries(ano,status,pageable);
+            System.out.println("buscando Serie");
             for (Serie element : series) {
-                if( element.getImdbId() != null ){
+                if( element.getImdbId() != null && element.getImageURI() == null){
+                   System.out.println("buscando dados API"); 
                    StreamingInfo info = imdbRepo.getStreamingInfo(element.getImdbId());
                    element.setOverview(info.getOverview());
                    if(info.getImageSet() != null ){
@@ -58,18 +57,22 @@ public class SeriesService {
                    }
                    element.setCast(info.getCast());
                    element.setRating(info.getRating());
+
+                   serieRepository.save(element);
                 }
             }
             return series;
         } else {
             Page<Serie> allSeries = serieRepository.findAll(pageable);
             for (Serie element : allSeries) {
-                if( element.getImdbId() != null ){
+                if( element.getImdbId() != null && element.getImageURI() == null){
                    StreamingInfo info = imdbRepo.getStreamingInfo(element.getImdbId());
                    element.setOverview(info.getOverview());
                    element.setImageURI(info.getImageSet().getHorizontalPoster().getW720());
                    element.setCast(info.getCast());
                    element.setRating(info.getRating());
+                   
+                   serieRepository.save(element);
                 }
             }
             return allSeries;
@@ -80,12 +83,14 @@ public class SeriesService {
     public List<Serie> buscarSerie( String nome) {
         List<Serie> series = serieRepository.buscarSerie(nome);
         for (Serie element : series) {
-            if( element.getImdbId() != null ){
+            if( element.getImdbId() != null && element.getImageURI() == null){
                StreamingInfo info = imdbRepo.getStreamingInfo(element.getImdbId());
                element.setOverview(info.getOverview());
                element.setImageURI(info.getImageSet().getHorizontalPoster().getW720());
                element.setCast(info.getCast());
                element.setRating(info.getRating());
+
+               serieRepository.save(element);
             }
         }
         return series;

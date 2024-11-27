@@ -29,15 +29,19 @@ public class ConsolidadoController {
     }
 
     @GetMapping("/consolidadoQtdProviderAno")
-    public ResponseEntity<List<ConsolidadoSerie>> consolidadoQtdProviderAno(@RequestParam(value = "provider", defaultValue = "Netflix") String provider) {
+    public ResponseEntity<List<ConsolidadoSerie>> consolidadoQtdProviderAno(@RequestParam(value = "provider", defaultValue = "todos") String provider) {
             
-            List<ConsolidadoSerie> lista = consolidadoSerieRespository.consolidadoQtdAno();
-            List<ConsolidadoSerie> novaLista = lista.stream()
+            if(provider.equals("todos")){
+                List<ConsolidadoSerie> lista = consolidadoSerieRespository.consolidadoQtdProviderAno();
+                return ResponseEntity.ok(lista);
+            }
+            else{
+              List<ConsolidadoSerie> lista = consolidadoSerieRespository.consolidadoQtdProviderAno();
+              List<ConsolidadoSerie> novaLista = lista.stream()
                                                .filter(c -> c.getProvider().equals(provider))
                                                .collect(Collectors.toList());
 
-            System.out.println(novaLista);                                   
-            return ResponseEntity.ok(novaLista);
-        
+              return ResponseEntity.ok(novaLista);
+            }
     }
 }
